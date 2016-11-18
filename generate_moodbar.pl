@@ -7,6 +7,7 @@ use warnings;
 
 use File::Find;
 use File::Spec qw(splitpath);
+use Getopt::Long;
 use List::MoreUtils qw(any);
 
 use threads;
@@ -16,14 +17,18 @@ use threads::shared;
 my @EXTENSIONS = qw/flac mp3 ogg wav wma/;
 
 my $can_use_threads = eval 'use threads; 1';
-
+my $dryrun = 0;
 my $processors = 1;
 
 my %files;
 
+GetOptions("dry-run|dryrun" => \$dryrun);
+
 sub help {
 	say "Usage: $0 location(s)";
 	say " e.g $0 .";
+	say "Arguments:";
+	say " --dryrun | --dry-run show changes without executing";
 	exit(1);
 }
 
@@ -59,7 +64,7 @@ sub moodbar {
 		
 		if(!-f $moodbarname) {
 			my @syscall = ('/usr/bin/moodbar', '-o', $moodbarname, $filename);
-			system @syscall;
+			$dryrun ? say @syscall : system @syscall;
 		}
 	}
 }
@@ -97,7 +102,7 @@ sub moodbar_threaded {
 					
 					if(!-f $moodbarname) {
 						my @syscall = ('/usr/bin/moodbar', '-o', $moodbarname, $filename);
-						system @syscall;
+						$dryrun ? say @syscall : system @syscall;
 					}
 				}
 				
