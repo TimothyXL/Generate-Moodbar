@@ -18,17 +18,26 @@ my @EXTENSIONS = qw/flac mp3 ogg wav wma/;
 
 my $can_use_threads = eval 'use threads; 1';
 my $dryrun = 0;
+my $help = 0;
+my $overwrite = 0;
 my $processors = 1;
 
 my %files;
 
-GetOptions("dry-run|dryrun" => \$dryrun);
+GetOptions(
+    "dry-run|dryrun" => \$dryrun,
+    "help" => \$help,
+    "overwrite" => \$overwrite
+);
+
 
 sub help {
 	say "Usage: $0 location(s)";
 	say " e.g $0 .";
 	say "Arguments:";
 	say " --dryrun | --dry-run show changes without executing";
+    say " --help               show this help text";
+	say " --overwrite          overwrite any existing moodbar";
 	exit(1);
 }
 
@@ -53,7 +62,7 @@ sub wanted {
 			my ($volume, $directories, $moodbarname) = File::Spec->splitpath($filename);
 			$moodbarname = $directories . "." . $moodbarname =~ s/$ext/mood/gr;
 			
-			$files{$filename} = $moodbarname;
+			$files{$filename} = $moodbarname if $overwrite || !-f $moodbarname;
 		}
 	}
 }
@@ -62,9 +71,9 @@ sub moodbar {
 	foreach my $filename (keys %files) {
 		my $moodbarname = $files{$filename};
 		
-		if(!-f $moodbarname) {
+		if($overwrite || !-f $moodbarname) {
 			my @syscall = ('/usr/bin/moodbar', '-o', $moodbarname, $filename);
-			$dryrun ? say @syscall : system @syscall;
+			$dryrun ? say join(' ', @syscall) : system @syscall;
 		}
 	}
 }
@@ -100,9 +109,9 @@ sub moodbar_threaded {
 					my $filename = pop(@keys);
 					my $moodbarname = $files{$filename};
 					
-					if(!-f $moodbarname) {
+					if($overwrite || !-f $moodbarname) {
 						my @syscall = ('/usr/bin/moodbar', '-o', $moodbarname, $filename);
-						$dryrun ? say @syscall : system @syscall;
+						$dryrun ? say join(' ', @syscall) : system @syscall;
 					}
 				}
 				
@@ -116,6 +125,7 @@ sub moodbar_threaded {
 	}
 }
 
+help() if $help;
 help() unless @ARGV > 0;
 main(@ARGV);
 
