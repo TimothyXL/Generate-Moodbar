@@ -5,8 +5,10 @@ use strict;
 use utf8;
 use warnings;
 
+use Cwd;
 use File::Find;
 use File::Spec qw(splitpath);
+use File::Util qw(SL);
 use Getopt::Long;
 use List::MoreUtils qw(any);
 
@@ -21,6 +23,9 @@ my $dryrun = 0;
 my $help = 0;
 my $overwrite = 0;
 my $processors = 1;
+
+my $pwd = cwd();
+my $sl = File::Util->SL;
 
 my %files;
 
@@ -38,11 +43,16 @@ sub help {
 	say " --dryrun | --dry-run show changes without executing";
     say " --help               show this help text";
 	say " --overwrite          overwrite any existing moodbar";
-	exit(1);
+	exit($help);
 }
 
 sub main {
-	find(\&wanted, @_);
+	# Let's allow people to just pass "." or "*" instead of having to pass $(pwd)
+	my $directories = @_;
+	
+	map { $_ = $pwd . $sl . $_ unless $_ =~ /^$sl/ } $directories;
+	
+	find(\&wanted, @directories);
 	
 	if($can_use_threads) {
 		moodbar_threaded();
