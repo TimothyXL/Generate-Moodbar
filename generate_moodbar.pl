@@ -50,7 +50,7 @@ sub main {
 	# Let's allow people to just pass "." or "*" instead of having to pass $(pwd)
 	my @directories = @_;
 	
-	map { $_ = $pwd . $sl . $_ unless $_ =~ /^$sl/ } $directories;
+	map { $_ = $pwd . $sl . $_ unless $_ =~ /^$sl/ } @directories;
 	
 	find(\&wanted, @directories);
 	
