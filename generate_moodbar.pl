@@ -48,7 +48,7 @@ sub help {
 
 sub main {
 	# Let's allow people to just pass "." or "*" instead of having to pass $(pwd)
-	my $directories = @_;
+	my @directories = @_;
 	
 	map { $_ = $pwd . $sl . $_ unless $_ =~ /^$sl/ } $directories;
 	
