@@ -16,7 +16,7 @@ use threads;
 use threads::shared;
 
 
-my @EXTENSIONS = qw/flac mp3 ogg wav wma/;
+my @EXTENSIONS = qw/flac mp3 ogg opus wav wma/;
 
 my $can_use_threads = eval 'use threads; 1';
 my $dryrun = 0;
